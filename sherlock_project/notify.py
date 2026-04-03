@@ -36,10 +36,12 @@ class QueryNotify:
         """
 
         self.result = result
+        self.total_sites = 0
+        self.current_site_count = 0
 
         # return
 
-    def start(self, message=None):
+    def start(self, message=None, total_sites=0):
         """Notify Start.
 
         Notify method for start of query.  This method will be called before
@@ -139,7 +141,7 @@ class QueryNotifyPrint(QueryNotify):
 
         return
 
-    def start(self, message):
+    def start(self, message, total_sites=0):
         """Notify Start.
 
         Will print the title to the standard output.
@@ -148,11 +150,14 @@ class QueryNotifyPrint(QueryNotify):
         self                   -- This object.
         message                -- String containing username that the series
                                   of queries are about.
+        total_sites            -- Total number of sites that will be checked.
 
         Return Value:
         Nothing.
         """
 
+        self.total_sites = total_sites
+        self.current_site_count = 0
         title = "Checking username"
 
         print(Style.BRIGHT + Fore.GREEN + "[" +
@@ -193,6 +198,7 @@ class QueryNotifyPrint(QueryNotify):
         Nothing.
         """
         self.result = result
+        self.current_site_count += 1
 
         response_time_text = ""
         if self.result.query_time is not None and self.verbose is True:
@@ -201,9 +207,14 @@ class QueryNotifyPrint(QueryNotify):
         # Output to the terminal is desired.
         if result.status == QueryStatus.CLAIMED:
             self.countResults()
+            progress_text = ""
+            if self.total_sites > 0:
+                progress_text = f" [{self.current_site_count}/{self.total_sites}]"
+
             print(Style.BRIGHT + Fore.WHITE + "[" +
                   Fore.GREEN + "+" +
                   Fore.WHITE + "]" +
+                  progress_text +
                   response_time_text +
                   Fore.GREEN +
                   f" {self.result.site_name}: " +

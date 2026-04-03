@@ -205,7 +205,7 @@ def sherlock(
     """
 
     # Notify caller that we are starting the query.
-    query_notify.start(username)
+    query_notify.start(username, total_sites=len(site_data))
 
     # Normal requests
     underlying_session = requests.session()
@@ -646,7 +646,7 @@ def main():
     )
     parser.add_argument(
         "username",
-        nargs="+",
+        nargs="*",
         metavar="USERNAMES",
         action="store",
         help="One or more usernames to check with social networks. Check similar usernames using {?} (replace to '_', '-', '.').",
@@ -679,9 +679,8 @@ def main():
     # in future release
     parser.add_argument(
         "--no-txt",
-        action="store_true",
-        dest="no_txt",
-        default=False,
+        action="store_false",
+        dest="output_txt",
         help="Disable creation of a txt file - WILL BE DEPRECATED",
     )
 
@@ -689,8 +688,8 @@ def main():
         "--txt",
         action="store_true",
         dest="output_txt",
-        default=False,
-        help="Enable creation of a txt file",
+        default=True,
+        help="Enable creation of a txt file (default)",
     )
 
     parser.add_argument(
@@ -702,6 +701,21 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if not args.username:
+        if sys.stdin.isatty():
+            print("No usernames provided. Please enter one or more usernames (separated by spaces):")
+            try:
+                line = sys.stdin.readline()
+                if not line:
+                    sys.exit(0)
+                args.username = line.strip().split()
+            except KeyboardInterrupt:
+                print()
+                sys.exit(0)
+
+        if not args.username:
+            parser.error("the following arguments are required: USERNAMES")
 
     # If the user presses CTRL-C, exit gracefully without throwing errors
     signal.signal(signal.SIGINT, handler)
