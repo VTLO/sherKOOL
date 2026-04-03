@@ -10,7 +10,7 @@ class Interactives:
         if platform.system() == "Windows":
             command:str = f"py -m sherlock_project {args}"
         else:
-            command:str = f"sherlock {args}"
+            command:str = f"python3 -m sherlock_project {args}"
 
         proc_out:str = ""
         try:
